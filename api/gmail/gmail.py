@@ -81,6 +81,47 @@ def parse_parts(service, parts, folder_name, message):
                 print("Saving HTML to", filepath)
                 with open(filepath, "wb") as f:
                     f.write(urlsafe_b64decode(data))
+            else:
+                # attachment other than a plain text or HTML
+                for part_header in part_headers:
+                    part_header_name = part_header.get("name")
+                    part_header_value = part_header.get("value")
+                    if part_header_name == "Content-Disposition":
+                        if "attachment" in part_header_value:
+                            # we get the attachment ID 
+                            # and make another request to get the attachment itself
+                            print("Saving the file:", filename, "size:", get_size_format(file_size))
+                            attachment_id = body.get("attachmentId")
+                            attachment = service.users().messages() \
+                                        .attachments().get(id=attachment_id, userId='me', messageId=message['id']).execute()
+                            data = attachment.get("data")
+                            filepath = os.path.join(folder_name, filename)
+                            if data:
+                                with open(filepath, "wb") as f:
+                                    f.write(urlsafe_b64decode(data))
+
+
+
+
+
+  # utility functions
+def get_size_format(b, factor=1024, suffix="B"):
+    """
+    Scale bytes to its proper byte format
+    e.g:
+        1253656 => '1.20MB'
+        1253656678 => '1.17GB'
+    """
+    for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
+        if b < factor:
+            return f"{b:.2f}{unit}{suffix}"
+        b /= factor
+    return f"{b:.2f}Y{suffix}"
+
+
+def clean(text):
+    # clean text for creating a folder
+    return "".join(c if c.isalnum() else "_" for c in text)
 
 
 def print_labels():
@@ -98,3 +139,8 @@ def print_labels():
 
   except HttpError as error:
     print(f"An error occurred: {error}")
+
+  
+
+if __name__ == "__main__":
+  print_labels()
