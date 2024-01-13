@@ -21,19 +21,24 @@ def push_mail(database, mail):
 
 
 def update_mail(database, filters, new_values):
-    database["tracks"].update_one(filters, new_values)
+    database["tracks"].update_one(filters, {"$set": new_values})
 
 
 def get_template(database, filters):
     return database["templates"].find_one(filters)
 
 
-def push_template(database, template):
-    database["templates"].insert_one(template)
+def push_update_template(database, template):
+    if get_template(database, {"type": template["type"]}) == None:
+        database["templates"].insert_one(template)
+    else:
+        update_query = {"type": template["type"]}
+        new_values = {"template": template["template"]}
+        update_template(database, update_query, new_values)
 
 
 def update_template(database, filters, new_values):
-    database["templates"].update_one(filters, new_values)
+    database["templates"].update_one(filters, {"$set": new_values})
 
 
 """

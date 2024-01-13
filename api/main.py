@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
-from mongodb import get_database, get_mails, push_mail, update_mail, get_template, push_template, update_template
+from mongodb import get_database, get_mails, push_mail, update_mail, get_template, push_update_template, update_template
 from openai_api import get_openai_client, get_feedback
 from gmail.gmail import get_google_api_connection, search_messages_from, read_message, send_message
 import re
@@ -46,10 +46,10 @@ def refresh_emails():
         gpt_feedback = get_feedback(openai_client, message_contents["text"])
 
         update_query = {"_id": track["_id"]}
-        new_values = {"$set": {
+        new_values = {
             "status": ("RP" if gpt_feedback["positive"] == True else "RN"),
             "desc": gpt_feedback["analysis"]
-        }}
+        }
 
         update_mail(database, update_query, new_values)
 
@@ -57,11 +57,13 @@ def refresh_emails():
 @app.route("/send", methods=["POST"])
 def send_email():
     post_data = request.get_json()
-    if not ("recipients" in post_data and "own_email" in post_data and "template" in post_data):
+    if not ("recipients" in post_data and "own_email" in post_data and "type" in post_data):
         return {"status": "ER"}, 403
 
+    template = get_template(database, {"type": post_data["type"]})["template"]
+
     for recipient in post_data["recipients"]:
-        text = fill_template(post_data["template"], recipient["placeholders"], recipient["first_name"], recipient["last_name"])
+        text = fill_template(template, recipient["placeholders"], recipient["first_name"], recipient["last_name"])
         # TODO handle object of email
         send_message(googleapi_client, recipient["email"], "Test", text)
     
@@ -95,7 +97,7 @@ def template():
         if not ("template" in post_data and "type" in post_data):
             return {"status": "ER"}, 403
         # TODO this adds a new template, it doesn't modify it
-        push_template(database, {
+        push_update_template(database, {
             "template": post_data["template"],
             "type": post_data["type"]
         })

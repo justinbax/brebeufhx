@@ -37,7 +37,7 @@ UN: Uncertain ?
     input: {
         "recipients": Array<Recipient>,
         "own_email": String,
-        "template": String
+        "type": String
     }
     output: {
         "status": "ER" or "SC"
