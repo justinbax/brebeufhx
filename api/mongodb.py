@@ -19,7 +19,7 @@ def get_mails(collection, filters):
 def push_mail(collection, mail):
     collection.insert_one(mail)
 
-
+"""
 dbname = get_database()
 collection = dbname["tracks"]
 
@@ -43,3 +43,4 @@ print("Sent to def@gmail.com:")
 mails = get_mails(collection, {"sent_to": "def@gmail.com"})
 for mail in mails:
     print(f"From {mail['name'] }: {mail['status']} ({mail['desc']})")
+"""

@@ -155,7 +155,7 @@ def read_message(service, message):
     message_text = parse_parts(service, parts, folder_name, message)
     return message_text
 
-
+"""
 if __name__ == "__main__":
     # get emails that match the query you specify
     service = get_google_api_connection()
@@ -163,3 +163,4 @@ if __name__ == "__main__":
     # for each email matched, read it (output plain/text to console & save HTML and attachments)
     for msg in results:
         print(read_message(service, msg))
+"""
