@@ -81,9 +81,9 @@ def parse_parts(service, parts, folder_name, message):
                 print("Saving HTML to", filepath)
                 with open(filepath, "wb") as f:
                     f.write(urlsafe_b64decode(data))
+         
 
-
-def print_labels():
+def print_labels_or_something():
   try:
     service = get_google_api_connection()
     results = service.users().labels().list(userId="me").execute()
