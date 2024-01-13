@@ -38,12 +38,28 @@ export default function Send() {
         setArrOfPlaceholders(newArr)
     }
 
-    function handleUpdateUserPlaceHolders(userPlaceHolderObject: UserPlaceholders, key: keyof UserPlaceholders, value: string) {
-        let newObj = userPlaceHolderObject
-        newObj[key] = value
-        return newObj
+    function handleUpdateUserPlaceHolders(index: number, prop: keyof UserPlaceholders, updatedValue: any) {
+        const newArr = arrOfUserPlaceholders.map((placeholder, i) => {
+            if (i === index) {
+                let newPlaceholder = placeholder
+                newPlaceholder[prop] = updatedValue
+                return newPlaceholder
+            }
+            else {
+                return placeholder
+            }
+    
+        } )
+        setArrOfUserPlaceholders(newArr)
+
     }
     
+    function submit() {
+        for (let i: number = 0; i < arrOfRecipients.length; i++) {
+            handleUpdateRecipientProp(i, 'placeholders', arrOfUserPlaceholders[i])
+        }
+        console.log(arrOfRecipients)
+    }
     return (
         <main>
             <div className="grid grid-cols-1 m-12">
@@ -65,25 +81,33 @@ export default function Send() {
                     }
                     <div className="my-2">
                         <button className="bg-yellow-400 p-4 hover:bg-yellow-200" 
-                        onClick={() => {setArrOfRecipients([...arrOfRecipients, new Recipient('', '', '')]); console.log(arrOfRecipients)}}
+                        onClick={() => {setArrOfRecipients([...arrOfRecipients, new Recipient('', '', '')]); setArrOfUserPlaceholders([...arrOfUserPlaceholders, {'': ''}]);console.log(arrOfRecipients)}}
                         >Add Recipient</button>
                     </div>
 
                 </div>
                 <div className="my-2 bg-slate-100 min-h-60 p-8">
                     {
-                        Array.from({length: arrOfPlaceholders.length}, (_, i) => (
-                            <div key={i} className="grid grid-cols-3 gap-2">
+                        Array.from({length: arrOfPlaceholders.length}, (_, i) => {
+                            
+                            return (<div key={i} className="grid grid-cols-3 gap-2">
                                 <div>
                                 <div>Placeholder {`<<`}{arrOfPlaceholders[i]}{`>>`}</div>
                                 <input type="text" value={arrOfPlaceholders[i]} onChange={e => handleUpdatePlaceholders(i, e.target.value)} />
                                 </div>
                                 <div className="grid grid-cols-3 col-span-2">
-                                    <PlaceholderPerUser placeholderName={arrOfPlaceholders[i]}></PlaceholderPerUser>
+                                    {
+                                        Array.from({length: arrOfRecipients.length}, (_, j) => (
+                                            <div key={j} >
+                                            <input key={j} type="text" value={arrOfUserPlaceholders[j][arrOfPlaceholders[i]]} onChange={e => handleUpdateUserPlaceHolders(j, arrOfPlaceholders[i], e.target.value)} /> 
+                                            </div>
+                            
+                                        ))
+                                    }
                                 </div>
 
-                            </div>
-                        ))
+                            </div>)
+                        })
                     }
                     <div className="my-2">
                         <button className="bg-yellow-400 p-4 hover:bg-yellow-200" 
@@ -96,19 +120,12 @@ export default function Send() {
                     Template here: <br/>
                     <textarea onChange={(e) => setTemplate(e.target.value)}></textarea>
                 </div>
-                <div className="my-2"><button className="bg-yellow-400 p-4 hover:bg-yellow-200">Submit</button></div>
+                <div className="my-2"><button className="bg-yellow-400 p-4 hover:bg-yellow-200" onClick={() => submit()}>Submit</button></div>
             </div>
             <div>{template}</div>
             
         </main>
     )
-    function PlaceholderPerUser(props:any) {
 
-        return Array.from({length: arrOfRecipients.length}, (_, j) => (
-            <div key={j} >
-                <input key={j} type="text" value={arrOfRecipients[j].placeholders[props.placeholderName]} onChange={e => handleUpdateRecipientProp(j, "placeholders", handleUpdateUserPlaceHolders(arrOfRecipients[j].placeholders, props.placeholderName, e.target.value))}/> 
-            </div>
-        ))
-    }
 }
 
