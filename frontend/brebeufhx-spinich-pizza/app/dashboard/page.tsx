@@ -1,4 +1,17 @@
+'use client'
+import { useState } from 'react'
+import { Api } from '../helpers/api'
+
 export default function Dashboard() {
+    const [arrOfRecipients, setArrOfRecipients] = useState([])
+    function getDashboardData() {
+        Api.get("http://localhost:3001/getListOfRecipients?own_email=cai.lucia04@gmail.com").then(
+            (res) => {
+                console.log(res)
+            }
+        )
+    }
+    getDashboardData()
     return (
         <main>
             <div className="grid grid-cols-2 gap-4 m-12">
