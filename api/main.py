@@ -38,6 +38,7 @@ def send_email():
     # TODO send email
     return
 
+
 @app.route("/track", methods=["POST"])
 def track_email():
     post_data = request.get_json()
@@ -55,6 +56,7 @@ def track_email():
 
     # TODO maybe check immediately if there's an answer and analyze it & change status/desc
     return Response(jsonify({"status": "SC"}))
+
 
 @app.route("/template", methods=["POST", "GET"])
 def template():
@@ -88,20 +90,36 @@ def template():
 
 @app.route("/getListOfRecipients", methods=["GET"])
 def get_list_of_recipients():
-    if not ("recipients" in request.args):
+    if not ("own_email" in request.args):
         return Response(jsonify({"status": "ER"}), status=403)
  
-    recipients = request.args.get("recipients")
+    own_email = request.args.get("own_email")
+    recipients = get_mails(database, {"sent_to": own_email})
+    if len(recipients) == 0:
+        return Response(jsonify({"status": "ER"}), status=403)
 
-    # TODO do stuff
-    return
+    recipients = [r.get("email") for r in recipients] # TODO there is a better way with error handling
+
+    return Response(jsonify({"recipients": recipients}))
+
 
 @app.route("/getRecipient", methods=["GET"])
 def get_recipient():
     if not ("recipient" in request.args):
         return Response(jsonify({"status": "ER"}), status=403)
  
-    recipients = request.args.get("recipient")
+    recipient = request.args.get("recipient")
+    recipient = get_mails(database, {"email": recipient})
 
-    # TODO do stuff
-    return
+    if len(recipient) == 0:
+        return Response(jsonify({"status": "ER"}), status=403)
+    elif len(recipient) > 1:
+        print("More than one recipient match found. Deal with that.")
+
+    recipient = recipient[0]
+    return Response(jsonify({
+        "first_name": recipient.get("first_name"),
+        "last_name": recipient.get("last_name"),
+        "status": recipient.get("status"),
+        "desc": recipient.get("desc")
+    }))
