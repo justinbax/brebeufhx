@@ -4,14 +4,14 @@ import { Recipient, UserPlaceholders } from '@/app/helpers/User'
 
 
 export default function Send() {
-    const [templateType, setTemplateType] = useState("")
+    const [templateType, setTemplateType] = useState("first")
     const [arrOfRecipients, setArrOfRecipients]: [Array<Recipient>, any] = useState([new Recipient('', '', '')])
     const [arrOfPlaceholders, setArrOfPlaceholders]: [Array<string>, any] = useState([''])
     const [arrOfUserPlaceholders, setArrOfUserPlaceholders]: [Array<UserPlaceholders>, any] = useState([{'': ''}])
     
     const axios = require('axios')
     async function doPostRequest(payload: any) {
-        let res = await axios.post("/send", payload)
+        let res = await axios.post("http://localhost:3001/send", payload)
         let data = res.data
         console.log(data)
     }
@@ -108,7 +108,8 @@ export default function Send() {
                                     {
                                         Array.from({length: arrOfRecipients.length}, (_, j) => (
                                             <div key={j} >
-                                            <input key={j} type="text" value={arrOfUserPlaceholders[j][arrOfPlaceholders[i]]} onChange={e => handleUpdateUserPlaceHolders(j, arrOfPlaceholders[i], e.target.value)} /> 
+                                                {arrOfRecipients[j].first_name !== "" ? arrOfRecipients[j].first_name + ' ' + arrOfRecipients[j].last_name + ':': "Recipient " + (j+1) + ':'} <br></br>
+                                                <input key={j} type="text" value={arrOfUserPlaceholders[j][arrOfPlaceholders[i]]} onChange={e => handleUpdateUserPlaceHolders(j, arrOfPlaceholders[i], e.target.value)} /> 
                                             </div>
                             
                                         ))
@@ -126,12 +127,14 @@ export default function Send() {
                     
                 </div>
                 <div className="my-2 bg-slate-100 min-h-60 p-8 grid grid-cols-1">
-                    Template type helpers: <br/>
-                    <input type="text" value={templateType} onChange={(e) => setTemplateType(e.target.value)}/>
+                    Template type: <br/>
+                    <select name="select" id="" value={templateType} onChange={(e) => {setTemplateType(e.target.value); console.log(templateType)}}>
+                        <option value="first">first</option>
+                        <option value="followup">followup</option>
+                    </select>
                 </div>
                 <div className="my-2"><button className="bg-yellow-400 p-4 hover:bg-yellow-200" onClick={() => submit()}>Submit</button></div>
             </div>
-            <div>{templateType}</div>
             
         </main>
     )
