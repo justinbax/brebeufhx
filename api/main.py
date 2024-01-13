@@ -32,11 +32,9 @@ def fill_template(template, placeholders, first_name, last_name):
     return result
 
 
-def update_emails():
+def refresh_emails():
     tracked_emails = get_mails(database, {})
-    print('a')
     for track in tracked_emails:
-        print('b')
         messages = search_messages_from(googleapi_client, track["email"])
         if len(messages) == 0:
             continue
@@ -46,8 +44,6 @@ def update_emails():
             continue
         
         gpt_feedback = get_feedback(openai_client, message_contents["text"])
-        
-        print(gpt_feedback)
 
         update_query = {"_id": track["_id"]}
         new_values = {"$set": {
@@ -87,7 +83,8 @@ def track_email():
         "desc": "No Reply"
     })
 
-    # TODO maybe check immediately if there's an answer and analyze it & change status/desc
+    update_emails()
+
     return {"status": "SC"}
 
 
@@ -124,6 +121,8 @@ def get_list_of_recipients():
     if not ("own_email" in request.args):
         return {"status": "ER"}, 403
  
+    refresh_emails()
+
     own_email = request.args.get("own_email")
     recipients = get_mails(database, {"sent_to": own_email})
 
@@ -137,6 +136,8 @@ def get_recipient():
     if not ("recipient" in request.args):
         return {"status": "ER"}, 403
  
+    refresh_emails()
+
     recipient = request.args.get("recipient")
     recipient = get_mails(database, {"email": recipient})
 
