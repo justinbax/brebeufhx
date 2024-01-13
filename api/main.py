@@ -96,7 +96,7 @@ def template():
         post_data = request.get_json()
         if not ("template" in post_data and "type" in post_data):
             return {"status": "ER"}, 403
-        # TODO this adds a new template, it doesn't modify it
+
         push_update_template(database, {
             "template": post_data["template"],
             "type": post_data["type"]
@@ -141,9 +141,13 @@ def get_recipient():
     refresh_emails()
 
     recipient = request.args.get("recipient")
-    recipient = get_mails(database, {"email": recipient})
+    recipient = list(get_mails(database, {"email": recipient}))
+
+    if len(recipient) == 0:
+        return {"status": "ER"}, 403
 
     recipient = recipient[0]
+
     return {
         "first_name": recipient.get("first_name"),
         "last_name": recipient.get("last_name"),
