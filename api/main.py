@@ -3,6 +3,7 @@ from flask_cors import CORS
 from mongodb import get_database, get_mails, push_mail, get_template, push_template
 from openai_api import get_openai_client, get_feedback
 from gmail.gmail import get_google_api_connection, search_messages_from, read_message
+import re
 
 app = Flask(__name__)
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -29,11 +30,34 @@ class Recipient:
         }
 
 
+def fill_template(template, placeholders, first_name, last_name):
+    result = template
+    iters = re.finditer(r"<<(.*?)>>", template)
+    iters_list = []
+    for i in iters:
+        iters_list.insert(0, i)
+
+    for i in iters_list:
+        key = template[i.start() + 2 : i.end() - 2]
+        if not key in placeholders:
+            continue
+        result = result[0 : i.start()] + placeholders[key] + result[i.end() : len(result)]
+
+    return result
+
+print(fill_template("Hello <<Abcdef>> i am <<good>> bye", {
+    "Abcdef": "my dear",
+    "good": "bad"
+}, "a", "b"))
+
+
 @app.route("/send", methods=["POST"])
 def send_email():
     post_data = request.get_json()
     if not ("recipients" in post_data and "own_email" in post_data and "template" in post_data):
         return {"status": "ER"}, 403
+
+
 
     # TODO send email
     return
@@ -63,7 +87,7 @@ def template():
     if request.method == "POST":
         if not ("template" in post_data and "type" in post_data):
             return {"status": "ER"}, 403
-        
+        # TODO this adds a new template, it doesn't modify it
         push_template(database, {
             "template": post_data["template"],
             "type": post_data["type"]
