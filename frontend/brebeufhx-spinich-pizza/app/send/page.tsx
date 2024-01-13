@@ -122,7 +122,7 @@ export default function Send() {
                     <div className="my-2">
                         <button className="bg-yellow-400 p-4 hover:bg-yellow-200" 
                         onClick={() => {setArrOfPlaceholders([...arrOfPlaceholders, '']); console.log(arrOfPlaceholders)}}
-                        >Add Recipient</button>
+                        >Add Placeholder</button>
                     </div>
                     
                 </div>

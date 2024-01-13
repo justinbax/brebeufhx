@@ -50,8 +50,9 @@ def refresh_emails():
         message_contents = read_message(googleapi_client, recent_message)
         if message_contents["read"]:
             continue
-        
-        gpt_feedback = get_feedback(openai_client, message_contents["text"])
+        gpt_feedback = {"positive": "NR"}
+        if len(message_contents["text"]) != 0:
+            gpt_feedback = get_feedback(openai_client, message_contents["text"])
 
         modify_post_data = {
             "removeLabelIds": [
@@ -66,7 +67,8 @@ def refresh_emails():
             "desc": gpt_feedback["analysis"]
         }
 
-        update_mail(database, update_query, new_values)
+        if len(message_contents["text"]) != 0:
+            update_mail(database, update_query, new_values)
 
 
 @app.route("/send", methods=["POST"])

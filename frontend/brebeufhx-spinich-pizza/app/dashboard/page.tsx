@@ -16,7 +16,7 @@ export default function Dashboard() {
                             console.log(res2.data)
                             let recipient = res2.data
                             recipient.email = res.data.recipients[i]
-                            setArrOfRecipients([...arrOfRecipients, recipient])
+                            setArrOfRecipients((arrOfRecipients: any) => [...arrOfRecipients, recipient])
                             
                         }
                     )
