@@ -44,29 +44,47 @@ def track_email():
     if not ("email" in post_data and "first_name" in post_data and "last_name" in post_data and "sent_to" in post_data):
         return Response(jsonify({"status": "ER"}), status=403)
 
-    database["tracks"].insert_one({
+    push_mail(database, {
         "first_name": post_data["first_name"],
         "last_name": post_data["last_name"],
         "email": post_data["email"],
-        "sent_to": 
+        "sent_to": post_data["send_to"],
+        "status": "NR",
+        "desc": "No Reply"
     })
 
-    return
+    # TODO maybe check immediately if there's an answer and analyze it & change status/desc
+    return Response(jsonify({"status": "SC"}))
 
 @app.route("/template", methods=["POST", "GET"])
 def template():
     if flask.request.method == "POST":
         if not ("template" in post_data and "type" in post_data):
             return Response(jsonify({"status": "ER"}), status=403)
-        return
+        
+        push_template(database, {
+            "template": post_data["template"],
+            "type": post_data["type"]
+        })
+        
+        return Response(jsonify({"status": "SC"}))
+    
     elif flask.request.method == "GET":
         if not ("type" in request.args):
             return Response(jsonify({"status": "ER"}), status=403)
  
         template_type = request.args.get("type")
+        matches = get_template(database, {"type": template_type})
+        if len(matches) == 0:
+            return Response(jsonify({"status": "ER"}), status=403)
 
-        # TODO do stuff
-        return
+        if len(matches) > 1:
+            print("Multiple template matches. Deal with that.")
+
+        match_template = matches[0].get("template")
+
+        return Response(jsonify({"template": match_template}))
+
 
 @app.route("/getListOfRecipients", methods=["GET"])
 def get_list_of_recipients():
