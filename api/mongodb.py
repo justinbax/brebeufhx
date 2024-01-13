@@ -12,14 +12,20 @@ def get_database():
     return client["brebeufhx"]
 
 
-def get_mails(collection, filters):
-    return collection.find(filters)
+def get_mails(database, filters):
+    return database["tracks"].find(filters)
 
 
-def push_mail(collection, mail):
-    collection.insert_one(mail)
+def push_mail(database, mail):
+    database["tracks"].insert_one(mail)
 
+def get_template(database, filters):
+    return database["templates"].find(filters)
 
+def push_template(database, template):
+    database["templates"].insert_one(template)
+
+"""
 dbname = get_database()
 collection = dbname["tracks"]
 
@@ -43,3 +49,4 @@ print("Sent to def@gmail.com:")
 mails = get_mails(collection, {"sent_to": "def@gmail.com"})
 for mail in mails:
     print(f"From {mail['name'] }: {mail['status']} ({mail['desc']})")
+"""
