@@ -44,6 +44,13 @@ def refresh_emails():
         
         gpt_feedback = get_feedback(openai_client, message_contents["text"])
 
+        modify_post_data = {
+            "removeLabelIds": [
+                "UNREAD"
+            ]
+        }
+        googleapi_client.users().messages().modify(userId="me", id=recent_message["id"], body=modify_post_data).execute()
+
         update_query = {"_id": track["_id"]}
         new_values = {
             "status": ("RP" if gpt_feedback["positive"] == True else "RN"),
