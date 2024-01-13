@@ -4,7 +4,6 @@ import { Recipient, UserPlaceholders } from '@/app/helpers/User'
 
 
 export default function Send() {
-    let nextArrID = 0
     const [templateType, setTemplateType] = useState("")
     const [arrOfRecipients, setArrOfRecipients]: [Array<Recipient>, any] = useState([new Recipient('', '', '')])
     const [arrOfPlaceholders, setArrOfPlaceholders]: [Array<string>, any] = useState([''])
@@ -65,6 +64,8 @@ export default function Send() {
         for (let i: number = 0; i < arrOfRecipients.length; i++) {
             handleUpdateRecipientProp(i, 'placeholders', arrOfUserPlaceholders[i])
         }
+        console.log(arrOfUserPlaceholders)
+        console.log(arrOfRecipients)
 
         doPostRequest({recipients: arrOfRecipients, own_email: "cai.lucia04@gmail.com", type: templateType})
     }

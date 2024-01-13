@@ -11,15 +11,19 @@ export const metadata: Metadata = {
   title: 'Spinich ',
   description: 'haha',
 }
-
+import NavBar from './components/navbar'
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <NavBar></NavBar>
+
+        {children}</body>
     </html>
   )
 }
