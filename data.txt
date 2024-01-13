@@ -1,11 +1,27 @@
 === CLASSES ===
 class Recipient {
-    "email": String,
     "first_name": String,
     "last_name": String,
+    "email": String,
     "placeholders": {
         // ex: "Position": "Product Manager", "Company": "Apple Inc.", ...
     }
+}
+
+=== DATABASE CONTENT ===
+collection tracks: {
+    "_id": some type of object, created automatically (DO NOT CREATE!),
+    "first_name": String,
+    "last_name": String,
+    "email": String,
+    "sent_to": String,
+    "status": String,
+    "desc": String
+}
+collection templates: {
+    "_id": some type of object, created automatically (DO NOT CREATE!),
+    "template": String,
+    "type": String
 }
 
 === STATUS CODES ===
@@ -21,7 +37,7 @@ UN: Uncertain ?
     input: {
         "recipients": Array<Recipient>,
         "own_email": String,
-        "template": String
+        "type": String
     }
     output: {
         "status": "ER" or "SC"
@@ -31,7 +47,8 @@ UN: Uncertain ?
     input: {
         "email": String,
         "first_name": String,
-        "last_name": String
+        "last_name": String,
+        "sent_to": String
     }
     output: {
         "status": "ER" or "SC"
@@ -51,6 +68,9 @@ UN: Uncertain ?
         output: {
             "template": String
         }
+        or {
+            "status": "ER"
+        }
 
 /getListOfRecipients --> GET
     input: ?own_email=<String>
@@ -65,4 +85,7 @@ UN: Uncertain ?
         "last_name": String,
         "status": "NR" or "RN" or "RP" or "UN",
         "desc": String
+    }
+    or {
+        "status": "ER"
     }
