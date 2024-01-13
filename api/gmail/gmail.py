@@ -46,7 +46,7 @@ def search_messages_from(service, email):
         messages.extend(result['messages'])
     while 'nextPageToken' in result:
         page_token = result['nextPageToken']
-        result = service.users().messages().list(userId='me',q=query, pageToken=page_token).execute()
+        result = service.users().messages().list(userId='me',q=f"from:{email}", pageToken=page_token).execute()
         if 'messages' in result:
             messages.extend(result['messages'])
     return messages

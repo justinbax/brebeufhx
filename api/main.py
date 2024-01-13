@@ -103,7 +103,7 @@ def track_email():
         "desc": "No Reply"
     })
 
-    update_emails()
+    refresh_emails()
 
     return {"status": "SC"}
 

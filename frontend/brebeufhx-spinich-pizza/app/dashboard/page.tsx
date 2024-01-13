@@ -6,7 +6,7 @@ import axios from 'axios'
 export default function Dashboard() {
     const [arrOfRecipients, setArrOfRecipients]: [any, any] = useState([])
     function getDashboardData() {
-        axios.get("http://localhost:3001/getListOfRecipients?own_email=cai.lucia04@gmail.com").then(
+        axios.get("http://localhost:3001/getListOfRecipients?own_email=chrisyx511@gmail.com").then(
             (res) => {
                 console.log(res.data.recipients);
                 for (let i = 0; i < Object.keys(res.data.recipients).length; i++) {
@@ -37,7 +37,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-2 gap-4 m-12">
             <div className="p-8 bg-green-100 rounded-lg">
                     <h1 className="text-emerald-700 font-bold text-4xl">Welcome back, </h1>
-                    <h1 className="text-emerald-900 font-semibold text-4xl">cai.lucia04@gmail.com</h1>
+                    <h1 className="text-emerald-900 font-semibold text-4xl">chrisyx511@gmail.com</h1>
 
                 </div>                <div></div>
                 <div className="bg-emerald-400 col-span-2 p-10 rounded-lg place-conetent-center">
