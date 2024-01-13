@@ -36,8 +36,7 @@ def fill_template(template, placeholders, first_name, last_name):
 
 def refresh_emails():
     global LAST_REFRESH
-    if current_time < LAST_REFRESH + 10:
-        print("skipped")
+    if current_time < LAST_REFRESH + 5:
         return
     LAST_REFRESH = current_time
 
