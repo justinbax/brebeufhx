@@ -5,7 +5,6 @@ from openai_api import get_openai_client, get_feedback
 from gmail.gmail import get_google_api_connection, search_messages_from, read_message, send_message
 import re
 import time
-from counter import LAST_REFRESH
 
 app = Flask(__name__)
 CORS(app)
