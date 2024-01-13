@@ -51,7 +51,6 @@ def search_messages_from(service, email):
             messages.extend(result['messages'])
     return messages
 
-
 def parse_parts(service, parts, folder_name, message):
     message_text = ""
     if parts:
@@ -109,7 +108,8 @@ def parse_parts(service, parts, folder_name, message):
 
 def read_message(service, message):
     msg = service.users().messages().get(userId='me', id=message['id'], format='full').execute()
-    # parts can be the message body, or attachments
+    
+    labelIds = msg["labelIds"]
     payload = msg['payload']
     headers = payload.get("headers")
     parts = payload.get("parts")
@@ -155,7 +155,7 @@ def read_message(service, message):
         if not os.path.isdir(folder_name):
             os.mkdir(folder_name)
     message_text = parse_parts(service, parts, folder_name, message)
-    return message_text
+    return {"text": message_text, "read": not ("UNREAD" in labelIds)}
 
 
 def build_message(destination, obj, body):

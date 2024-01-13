@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
-from mongodb import get_database, get_mails, push_mail, get_template, push_template
+from mongodb import get_database, get_mails, push_mail, update_mail, get_template, push_template, update_template
 from openai_api import get_openai_client, get_feedback
 from gmail.gmail import get_google_api_connection, search_messages_from, read_message, send_message
 import re
@@ -12,22 +12,6 @@ CORS(app)
 database = get_database()
 openai_client = get_openai_client()
 googleapi_client = get_google_api_connection()
-
-
-class Recipient:
-    def __init__(self, first_name, last_name, email, placeholders):
-        self.first_name = first_name
-        self.last_name = last_name
-        self.email = email
-        self.placeholders = placeholders
-    
-    def serialize(self):
-        return {
-            'first_name': self.first_name,
-            'last_name': self.last_name,
-            'email': self.email,
-            'placeholders': self.placeholders
-        }
 
 
 def fill_template(template, placeholders, first_name, last_name):
@@ -46,6 +30,32 @@ def fill_template(template, placeholders, first_name, last_name):
     # TODO add first_name and last_name special placeholders
 
     return result
+
+
+def update_emails():
+    tracked_emails = get_mails(database, {})
+    print('a')
+    for track in tracked_emails:
+        print('b')
+        messages = search_messages_from(googleapi_client, track["email"])
+        if len(messages) == 0:
+            continue
+        recent_message = messages[0]
+        message_contents = read_message(googleapi_client, recent_message)
+        if message_contents["read"]:
+            continue
+        
+        gpt_feedback = get_feedback(openai_client, message_contents["text"])
+        
+        print(gpt_feedback)
+
+        update_query = {"_id": track["_id"]}
+        new_values = {"$set": {
+            "status": ("RP" if gpt_feedback["positive"] == True else "RN"),
+            "desc": gpt_feedback["analysis"]
+        }}
+
+        update_mail(database, update_query, new_values)
 
 
 @app.route("/send", methods=["POST"])

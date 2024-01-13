@@ -19,11 +19,22 @@ def get_mails(database, filters):
 def push_mail(database, mail):
     database["tracks"].insert_one(mail)
 
+
+def update_mail(database, filters, new_values):
+    database["tracks"].update_one(filters, new_values)
+
+
 def get_template(database, filters):
     return database["templates"].find_one(filters)
 
+
 def push_template(database, template):
     database["templates"].insert_one(template)
+
+
+def update_template(database, filters, new_values):
+    database["templates"].update_one(filters, new_values)
+
 
 """
 dbname = get_database()
