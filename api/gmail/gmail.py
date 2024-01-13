@@ -171,18 +171,3 @@ def send_message(service, destination, obj, body):
         userId="me",
         body=build_message(destination, obj, body)
     ).execute()
-
-
-
-
-if __name__ == "__main__":
-    # get emails that match the query you specify
-    service = get_google_api_connection()
-    results = search_messages_from(service, "justin.bax@icloud.com")
-    # for each email matched, read it (output plain/text to console & save HTML and attachments)
-    for msg in results:
-        print(read_message(service, msg))
-    
-    # test send email
-    send_message(service, "justin.bax@icloud.com", "This is a subject", 
-        "This is the body of the email")

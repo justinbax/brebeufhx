@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
 from mongodb import get_database, get_mails, push_mail, get_template, push_template
 from openai_api import get_openai_client, get_feedback
-from gmail.gmail import get_google_api_connection, search_messages_from, read_message
+from gmail.gmail import get_google_api_connection, search_messages_from, read_message, send_message
 import re
 
 app = Flask(__name__)
@@ -43,12 +43,9 @@ def fill_template(template, placeholders, first_name, last_name):
             continue
         result = result[0 : i.start()] + placeholders[key] + result[i.end() : len(result)]
 
-    return result
+    # TODO add first_name and last_name special placeholders
 
-print(fill_template("Hello <<Abcdef>> i am <<good>> bye", {
-    "Abcdef": "my dear",
-    "good": "bad"
-}, "a", "b"))
+    return result
 
 
 @app.route("/send", methods=["POST"])
@@ -57,10 +54,12 @@ def send_email():
     if not ("recipients" in post_data and "own_email" in post_data and "template" in post_data):
         return {"status": "ER"}, 403
 
-
-
-    # TODO send email
-    return
+    for recipient in post_data["recipients"]:
+        text = fill_template(post_data["template"], recipient["placeholders"], recipient["first_name"], recipient["last_name"])
+        # TODO handle object of email
+        send_message(googleapi_client, recipient["email"], "Test", text)
+    
+    return {"status": "SC"}
 
 
 @app.route("/track", methods=["POST"])
@@ -73,7 +72,7 @@ def track_email():
         "first_name": post_data["first_name"],
         "last_name": post_data["last_name"],
         "email": post_data["email"],
-        "sent_to": post_data["send_to"],
+        "sent_to": post_data["sent_to"],
         "status": "NR",
         "desc": "No Reply"
     })
@@ -85,6 +84,7 @@ def track_email():
 @app.route("/template", methods=["POST", "GET"])
 def template():
     if request.method == "POST":
+        post_data = request.get_json()
         if not ("template" in post_data and "type" in post_data):
             return {"status": "ER"}, 403
         # TODO this adds a new template, it doesn't modify it
@@ -116,8 +116,6 @@ def get_list_of_recipients():
  
     own_email = request.args.get("own_email")
     recipients = get_mails(database, {"sent_to": own_email})
-    if len(recipients) == 0:
-        return {"status": "ER"}, 403
 
     recipients = [r.get("email") for r in recipients] # TODO there is a better way with error handling
 
@@ -131,11 +129,6 @@ def get_recipient():
  
     recipient = request.args.get("recipient")
     recipient = get_mails(database, {"email": recipient})
-
-    if len(recipient) == 0:
-        return {"status": "ER"}, 403
-    elif len(recipient) > 1:
-        print("More than one recipient match found. Deal with that.")
 
     recipient = recipient[0]
     return {
