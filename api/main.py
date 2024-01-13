@@ -35,10 +35,10 @@ def fill_template(template, placeholders, first_name, last_name):
 
 
 def refresh_emails():
-    time = time.time()
-    if time < last_refresh + 10:
+    current_time = time.time()
+    if current_time < last_refresh + 10:
         return
-        
+
     tracked_emails = get_mails(database, {})
     for track in tracked_emails:
         messages = search_messages_from(googleapi_client, track["email"])
