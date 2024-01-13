@@ -6,7 +6,6 @@ from gmail.gmail import get_google_api_connection, search_messages_from, read_me
 import re
 
 app = Flask(__name__)
-app.config['CORS_HEADERS'] = 'Content-Type'
 CORS(app)
 
 database = get_database()
@@ -60,7 +59,10 @@ def send_email():
     if not ("recipients" in post_data and "own_email" in post_data and "type" in post_data):
         return {"status": "ER"}, 403
 
-    template = get_template(database, {"type": post_data["type"]})["template"]
+    template = get_template(database, {"type": post_data["type"]})
+    if template == None:
+        return {"status": "ER"}, 403
+    template = template["template"]
 
     for recipient in post_data["recipients"]:
         text = fill_template(template, recipient["placeholders"], recipient["first_name"], recipient["last_name"])
