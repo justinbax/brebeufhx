@@ -5,9 +5,11 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from base64 import urlsafe_b64decode, urlsafe_b64decode
+from base64 import urlsafe_b64decode, urlsafe_b64encode
+from email.mime.text import MIMEText
 
-SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
+SCOPES = ["https://mail.google.com/"]
+our_email = "cai.lucia04@gmail.com"
 
 def get_google_api_connection():
   creds = None
@@ -156,6 +158,23 @@ def read_message(service, message):
     return message_text
 
 
+def build_message(destination, obj, body):
+    message = MIMEText(body)
+    message['to'] = destination
+    message['from'] = our_email
+    message['subject'] = obj
+    return {'raw': urlsafe_b64encode(message.as_bytes()).decode()}
+
+
+def send_message(service, destination, obj, body):
+    return service.users().messages().send(
+        userId="me",
+        body=build_message(destination, obj, body)
+    ).execute()
+
+
+
+
 if __name__ == "__main__":
     # get emails that match the query you specify
     service = get_google_api_connection()
@@ -163,3 +182,7 @@ if __name__ == "__main__":
     # for each email matched, read it (output plain/text to console & save HTML and attachments)
     for msg in results:
         print(read_message(service, msg))
+    
+    # test send email
+    send_message(service, "justin.bax@icloud.com", "This is a subject", 
+        "This is the body of the email")
