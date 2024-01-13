@@ -12,7 +12,7 @@ export default function Send() {
     
     const axios = require('axios')
     async function doPostRequest(payload: any) {
-        let res = await axios.post("http://localhost:3000/send", payload)
+        let res = await axios.post("/send", payload)
         let data = res.data
         console.log(data)
     }

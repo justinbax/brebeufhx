@@ -4,6 +4,7 @@ from mongodb import get_database, get_mails, push_mail, update_mail, get_templat
 from openai_api import get_openai_client, get_feedback
 from gmail.gmail import get_google_api_connection, search_messages_from, read_message, send_message
 import re
+import time
 
 app = Flask(__name__)
 CORS(app)
@@ -11,6 +12,8 @@ CORS(app)
 database = get_database()
 openai_client = get_openai_client()
 googleapi_client = get_google_api_connection()
+
+last_refresh = 0
 
 
 def fill_template(template, placeholders, first_name, last_name):
@@ -32,6 +35,10 @@ def fill_template(template, placeholders, first_name, last_name):
 
 
 def refresh_emails():
+    time = time.time()
+    if time < last_refresh + 10:
+        return
+        
     tracked_emails = get_mails(database, {})
     for track in tracked_emails:
         messages = search_messages_from(googleapi_client, track["email"])
