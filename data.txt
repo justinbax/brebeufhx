@@ -1,0 +1,68 @@
+=== CLASSES ===
+class Recipient {
+    "email": String,
+    "first_name": String,
+    "last_name": String,
+    "placeholders": {
+        // ex: "Position": "Product Manager", "Company": "Apple Inc.", ...
+    }
+}
+
+=== STATUS CODES ===
+ER: Error
+SC: Success
+NR: No Reply
+RN: Reply Negative
+RP: Reply Positive
+UN: Uncertain ?
+
+=== ENDPOINTS ===
+/send --> POST
+    input: {
+        "recipients": Array<Recipient>,
+        "own_email": String,
+        "template": String
+    }
+    output: {
+        "status": "ER" or "SC"
+    }
+
+/track --> POST
+    input: {
+        "email": String,
+        "first_name": String,
+        "last_name": String
+    }
+    output: {
+        "status": "ER" or "SC"
+    }
+
+/template --> POST/GET
+    POST:
+        input: {
+            "template": String
+            "type": String
+        }
+        output: {
+            "status": "ER" or "SC"
+        }
+    GET:
+        input: ?type=<String>
+        output: {
+            "template": String
+        }
+
+/getListOfRecipients --> GET
+    input: ?own_email=<String>
+    output: {
+        "recipients": Array<String>
+    }
+
+/getRecipient --> GET
+    input: ?recipient=<String>
+    output: {
+        "first_name": String,
+        "last_name": String,
+        "status": "NR" or "RN" or "RP" or "UN",
+        "desc": String
+    }

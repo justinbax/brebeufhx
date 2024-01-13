@@ -16,3 +16,5 @@ Thumbs.db
 **/._*
 .DS_Store
 venv/*
+
+**/Pipfile
