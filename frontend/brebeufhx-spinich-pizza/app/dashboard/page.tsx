@@ -1,15 +1,31 @@
 'use client'
 import { useState } from 'react'
 import { Api } from '../helpers/api'
+import axios from 'axios'
 
 export default function Dashboard() {
-    const [arrOfRecipients, setArrOfRecipients] = useState([])
+    const [arrOfRecipients, setArrOfRecipients]: [any, any] = useState([])
     function getDashboardData() {
-        Api.get("http://localhost:3001/getListOfRecipients?own_email=cai.lucia04@gmail.com").then(
+        axios.get("http://localhost:3001/getListOfRecipients?own_email=cai.lucia04@gmail.com").then(
             (res) => {
-                console.log(res)
+                console.log(res.data.recipients);
+                for (let i = 0; i < res.data.recipients; i++) {
+                    axios.get(`http://localhost:3001/getRecipient?recipient=${res.data.recipients[i]}`).then(
+                    
+                        (res) => {
+                            console.log(res.data)
+                            setArrOfRecipients([...arrOfRecipients, res.data])
+                            
+                        }
+                    )
+                    
+                }
+                
             }
         )
+        .finally(() => {
+            console.log(arrOfRecipients)
+        })
     }
     getDashboardData()
     return (
