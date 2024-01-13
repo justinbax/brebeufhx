@@ -5,10 +5,9 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from base64 import urlsafe_b64decode, urlsafe_b64decode
 
-# If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
-
 
 def get_google_api_connection():
   creds = None
@@ -24,13 +23,13 @@ def get_google_api_connection():
           "api/gmail/credentials.json", SCOPES
       )
       creds = flow.run_local_server(port=0)
-    # Save the credentials for the next run
+    
+    # Save credentials
     with open("api/gmail/token.json", "w") as token:
       token.write(creds.to_json())
 
   service = None
   try:
-    # Call the Gmail API
     service = build("gmail", "v1", credentials=creds)
   except HttpError as error:
     print(f"An error occurred: {error}")
@@ -38,12 +37,9 @@ def get_google_api_connection():
   return service
 
 
-def search_messages(service, query):
-    """
-    returns the IDs of the mails that match the query
-    """
-    result = service.users().messages().list(userId='me',q=query).execute()
-    messages = [ ]
+def search_messages_from(service, email):
+    result = service.users().messages().list(userId='me',q=f"from:{email}").execute()
+    messages = []
     if 'messages' in result:
         messages.extend(result['messages'])
     while 'nextPageToken' in result:
@@ -52,12 +48,10 @@ def search_messages(service, query):
         if 'messages' in result:
             messages.extend(result['messages'])
     return messages
-  
+
 
 def parse_parts(service, parts, folder_name, message):
-    """
-    Utility function that parses the content of an email partition
-    """
+    message_text = ""
     if parts:
         for part in parts:
             filename = part.get("filename")
@@ -74,8 +68,10 @@ def parse_parts(service, parts, folder_name, message):
                 # if the email part is text plain
                 if data:
                     text = urlsafe_b64decode(data).decode()
-                    print(text)
+                    message_text += text
             elif mimeType == "text/html":
+                #print("This email has an HTML part")
+                """
                 # if the email part is an HTML content
                 # save the HTML file and optionally open it in the browser
                 if not filename:
@@ -84,6 +80,7 @@ def parse_parts(service, parts, folder_name, message):
                 print("Saving HTML to", filepath)
                 with open(filepath, "wb") as f:
                     f.write(urlsafe_b64decode(data))
+                """
             else:
                 # attachment other than a plain text or HTML
                 for part_header in part_headers:
@@ -91,6 +88,8 @@ def parse_parts(service, parts, folder_name, message):
                     part_header_value = part_header.get("value")
                     if part_header_name == "Content-Disposition":
                         if "attachment" in part_header_value:
+                            #print("This email has an attachment")
+                            """
                             # we get the attachment ID 
                             # and make another request to get the attachment itself
                             print("Saving the file:", filename, "size:", get_size_format(file_size))
@@ -102,17 +101,11 @@ def parse_parts(service, parts, folder_name, message):
                             if data:
                                 with open(filepath, "wb") as f:
                                     f.write(urlsafe_b64decode(data))
+                            """
+    return message_text
 
 
 def read_message(service, message):
-    """
-    This function takes Gmail API `service` and the given `message_id` and does the following:
-        - Downloads the content of the email
-        - Prints email basic information (To, From, Subject & Date) and plain/text parts
-        - Creates a folder for each email based on the subject
-        - Downloads text/html content (if available) and saves it under the folder created as index.html
-        - Downloads any file that is attached to the email and saves it in the folder created
-    """
     msg = service.users().messages().get(userId='me', id=message['id'], format='full').execute()
     # parts can be the message body, or attachments
     payload = msg['payload']
@@ -125,19 +118,20 @@ def read_message(service, message):
         for header in headers:
             name = header.get("name")
             value = header.get("value")
-            if name.lower() == 'from':
+            #if name.lower() == 'from':
                 # we print the From address
-                print("From:", value)
-            if name.lower() == "to":
+                #print("From:", value)
+            #if name.lower() == "to":
                 # we print the To address
-                print("To:", value)
+                #print("To:", value)
             if name.lower() == "subject":
                 # make our boolean True, the email has "subject"
                 has_subject = True
                 # make a directory with the name of the subject
-                folder_name = clean(value)
+                #folder_name = clean(value)
                 # we will also handle emails with the same subject name
                 folder_counter = 0
+                """
                 while os.path.isdir(folder_name):
                     folder_counter += 1
                     # we have the same folder name, add a number next to it
@@ -149,56 +143,23 @@ def read_message(service, message):
                         folder_name = f"{folder_name}_{folder_counter}"
                 os.mkdir(folder_name)
                 print("Subject:", value)
-            if name.lower() == "date":
+                """
+            #if name.lower() == "date":
                 # we print the date when the message was sent
-                print("Date:", value)
+                #print("Date:", value)
     if not has_subject:
         # if the email does not have a subject, then make a folder with "email" name
         # since folders are created based on subjects
         if not os.path.isdir(folder_name):
             os.mkdir(folder_name)
-    parse_parts(service, parts, folder_name, message)
-    print("="*50)
+    message_text = parse_parts(service, parts, folder_name, message)
+    return message_text
 
-
-
-  # utility functions
-def get_size_format(b, factor=1024, suffix="B"):
-    """
-    Scale bytes to its proper byte format
-    e.g:
-        1253656 => '1.20MB'
-        1253656678 => '1.17GB'
-    """
-    for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
-        if b < factor:
-            return f"{b:.2f}{unit}{suffix}"
-        b /= factor
-    return f"{b:.2f}Y{suffix}"
-
-
-def clean(text):
-    # clean text for creating a folder
-    return "".join(c if c.isalnum() else "_" for c in text)
-
-
-def print_labels():
-  try:
-    service = get_google_api_connection()
-    results = service.users().labels().list(userId="me").execute()
-    labels = results.get("labels", [])
-
-    if not labels:
-      print("No labels found.")
-      return
-    print("Labels:")
-    for label in labels:
-      print(label["name"])
-
-  except HttpError as error:
-    print(f"An error occurred: {error}")
-
-  
 
 if __name__ == "__main__":
-  print_labels()
+    # get emails that match the query you specify
+    service = get_google_api_connection()
+    results = search_messages_from(service, "justin.bax@icloud.com")
+    # for each email matched, read it (output plain/text to console & save HTML and attachments)
+    for msg in results:
+        print(read_message(service, msg))
