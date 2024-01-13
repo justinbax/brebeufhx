@@ -20,7 +20,7 @@ def push_mail(database, mail):
     database["tracks"].insert_one(mail)
 
 def get_template(database, filters):
-    return database["templates"].find(filters)
+    return database["templates"].find_one(filters)
 
 def push_template(database, template):
     database["templates"].insert_one(template)
