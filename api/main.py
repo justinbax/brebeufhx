@@ -4,14 +4,16 @@ from mongodb import get_database, get_mails, push_mail, update_mail, get_templat
 from openai_api import get_openai_client, get_feedback
 from gmail.gmail import get_google_api_connection, search_messages_from, read_message, send_message
 import re
+import time
 
 app = Flask(__name__)
-app.config['CORS_HEADERS'] = 'Content-Type'
 CORS(app)
 
 database = get_database()
 openai_client = get_openai_client()
 googleapi_client = get_google_api_connection()
+
+last_refresh = 0
 
 
 def fill_template(template, placeholders, first_name, last_name):
@@ -33,6 +35,10 @@ def fill_template(template, placeholders, first_name, last_name):
 
 
 def refresh_emails():
+    current_time = time.time()
+    if current_time < last_refresh + 10:
+        return
+
     tracked_emails = get_mails(database, {})
     for track in tracked_emails:
         messages = search_messages_from(googleapi_client, track["email"])
@@ -44,6 +50,13 @@ def refresh_emails():
             continue
         
         gpt_feedback = get_feedback(openai_client, message_contents["text"])
+
+        modify_post_data = {
+            "removeLabelIds": [
+                "UNREAD"
+            ]
+        }
+        googleapi_client.users().messages().modify(userId="me", id=recent_message["id"], body=modify_post_data).execute()
 
         update_query = {"_id": track["_id"]}
         new_values = {
@@ -60,7 +73,10 @@ def send_email():
     if not ("recipients" in post_data and "own_email" in post_data and "type" in post_data):
         return {"status": "ER"}, 403
 
-    template = get_template(database, {"type": post_data["type"]})["template"]
+    template = get_template(database, {"type": post_data["type"]})
+    if template == None:
+        return {"status": "ER"}, 403
+    template = template["template"]
 
     for recipient in post_data["recipients"]:
         text = fill_template(template, recipient["placeholders"], recipient["first_name"], recipient["last_name"])
@@ -96,7 +112,7 @@ def template():
         post_data = request.get_json()
         if not ("template" in post_data and "type" in post_data):
             return {"status": "ER"}, 403
-        # TODO this adds a new template, it doesn't modify it
+
         push_update_template(database, {
             "template": post_data["template"],
             "type": post_data["type"]
@@ -141,9 +157,13 @@ def get_recipient():
     refresh_emails()
 
     recipient = request.args.get("recipient")
-    recipient = get_mails(database, {"email": recipient})
+    recipient = list(get_mails(database, {"email": recipient}))
+
+    if len(recipient) == 0:
+        return {"status": "ER"}, 403
 
     recipient = recipient[0]
+
     return {
         "first_name": recipient.get("first_name"),
         "last_name": recipient.get("last_name"),

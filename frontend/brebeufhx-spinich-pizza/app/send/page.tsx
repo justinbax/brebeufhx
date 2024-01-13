@@ -5,11 +5,18 @@ import { Recipient, UserPlaceholders } from '@/app/helpers/User'
 
 export default function Send() {
     let nextArrID = 0
-    const [template, setTemplate] = useState("")
+    const [templateType, setTemplateType] = useState("")
     const [arrOfRecipients, setArrOfRecipients]: [Array<Recipient>, any] = useState([new Recipient('', '', '')])
     const [arrOfPlaceholders, setArrOfPlaceholders]: [Array<string>, any] = useState([''])
     const [arrOfUserPlaceholders, setArrOfUserPlaceholders]: [Array<UserPlaceholders>, any] = useState([{'': ''}])
     
+    const axios = require('axios')
+    async function doPostRequest(payload: any) {
+        let res = await axios.post("/send", payload)
+        let data = res.data
+        console.log(data)
+    }
+
     function handleUpdateRecipientProp(index: number, prop: keyof Recipient, updatedValue: any) {
         const newArr = arrOfRecipients.map((recipient, i) => {
             if (i === index) {
@@ -58,7 +65,8 @@ export default function Send() {
         for (let i: number = 0; i < arrOfRecipients.length; i++) {
             handleUpdateRecipientProp(i, 'placeholders', arrOfUserPlaceholders[i])
         }
-        console.log(arrOfRecipients)
+
+        doPostRequest({recipients: arrOfRecipients, own_email: "cai.lucia04@gmail.com", type: templateType})
     }
     return (
         <main>
@@ -117,12 +125,12 @@ export default function Send() {
                     
                 </div>
                 <div className="my-2 bg-slate-100 min-h-60 p-8 grid grid-cols-1">
-                    Template here: <br/>
-                    <textarea onChange={(e) => setTemplate(e.target.value)}></textarea>
+                    Template type helpers: <br/>
+                    <input type="text" value={templateType} onChange={(e) => setTemplateType(e.target.value)}/>
                 </div>
                 <div className="my-2"><button className="bg-yellow-400 p-4 hover:bg-yellow-200" onClick={() => submit()}>Submit</button></div>
             </div>
-            <div>{template}</div>
+            <div>{templateType}</div>
             
         </main>
     )

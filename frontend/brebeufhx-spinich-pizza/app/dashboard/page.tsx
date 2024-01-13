@@ -1,4 +1,33 @@
+'use client'
+import { useState } from 'react'
+import { Api } from '../helpers/api'
+import axios from 'axios'
+
 export default function Dashboard() {
+    const [arrOfRecipients, setArrOfRecipients]: [any, any] = useState([])
+    function getDashboardData() {
+        axios.get("http://localhost:3001/getListOfRecipients?own_email=cai.lucia04@gmail.com").then(
+            (res) => {
+                console.log(res.data.recipients);
+                for (let i = 0; i < res.data.recipients; i++) {
+                    axios.get(`http://localhost:3001/getRecipient?recipient=${res.data.recipients[i]}`).then(
+                    
+                        (res) => {
+                            console.log(res.data)
+                            setArrOfRecipients([...arrOfRecipients, res.data])
+                            
+                        }
+                    )
+                    
+                }
+                
+            }
+        )
+        .finally(() => {
+            console.log(arrOfRecipients)
+        })
+    }
+    getDashboardData()
     return (
         <main>
             <div className="grid grid-cols-2 gap-4 m-12">
