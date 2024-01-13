@@ -1,6 +1,7 @@
 # IDEs and Editors
 .vscode
 .vs
+**/.idea
 
 # Binaries and Applcations
 **/*.o
