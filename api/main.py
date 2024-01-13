@@ -5,6 +5,7 @@ from openai_api import get_openai_client, get_feedback
 from gmail.gmail import get_google_api_connection, search_messages_from, read_message, send_message
 import re
 import time
+from counter import LAST_REFRESH
 
 app = Flask(__name__)
 CORS(app)
@@ -13,8 +14,7 @@ database = get_database()
 openai_client = get_openai_client()
 googleapi_client = get_google_api_connection()
 
-last_refresh = 0
-
+LAST_REFRESH = 0
 
 def fill_template(template, placeholders, first_name, last_name):
     result = template
@@ -35,9 +35,12 @@ def fill_template(template, placeholders, first_name, last_name):
 
 
 def refresh_emails():
-    current_time = time.time()
-    if current_time < last_refresh + 10:
+    global LAST_REFRESH
+    if current_time < LAST_REFRESH + 10:
+        print("skipped")
         return
+    LAST_REFRESH = current_time
+
 
     tracked_emails = get_mails(database, {})
     for track in tracked_emails:

@@ -9,7 +9,7 @@ export default function Dashboard() {
         axios.get("http://localhost:3001/getListOfRecipients?own_email=cai.lucia04@gmail.com").then(
             (res) => {
                 console.log(res.data.recipients);
-                for (let i = 0; i < res.data.recipients; i++) {
+                for (let i = 0; i < Object.keys(res.data.recipients).length; i++) {
                     axios.get(`http://localhost:3001/getRecipient?recipient=${res.data.recipients[i]}`).then(
                     
                         (res) => {
@@ -27,7 +27,6 @@ export default function Dashboard() {
             console.log(arrOfRecipients)
         })
     }
-    getDashboardData()
     return (
         <main>
             <div className="grid grid-cols-2 gap-4 m-12">
@@ -41,7 +40,8 @@ export default function Dashboard() {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 m-4">
                     <div className="bg-slate-200 p-8 px-10  rounded-lg text-wrap">
                         <div className="py-2">
-                        <div className="text-xl truncate">Chris Yang</div>
+                        <div className="text-xl truncate" onClick={() =>     getDashboardData()
+}>Chris Yang</div>
                         <div className="text-md truncate">XYang1876008@cdt.cadets.gc.ca</div>
                         </div>
                         <div className="py-2">
