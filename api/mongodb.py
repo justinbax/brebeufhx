@@ -1,13 +1,17 @@
 from pymongo import MongoClient
+import os
 
 
 def get_database():
-    MONGO_URI = "mongodb+srv://brebeufhx:brebeufhx@brebeufhx.pdpnnja.mongodb.net/"
+    db_username = os.environ.get("MONGODB_ATLAS_USERNAME")
+    db_passwd = os.environ.get("MONGODB_ATLAS_PASSWD")
+    MONGO_URI = f"mongodb+srv://{db_username}:{db_passwd}@brebeufhx.pdpnnja.mongodb.net/"
     client = MongoClient(MONGO_URI)
     try:
         client.admin.command('ping')
     except Exception as e:
         print(e)
+        return None
     
     return client["brebeufhx"]
 
@@ -39,30 +43,3 @@ def push_update_template(database, template):
 
 def update_template(database, filters, new_values):
     database["templates"].update_one(filters, {"$set": new_values})
-
-
-"""
-dbname = get_database()
-collection = dbname["tracks"]
-
-mail_1 = {
-    "name": "John Smith",
-    "address": "johnsmith@gmail.com",
-    "sent_to": "abc@gmail.com",
-    "status": "Not read",
-    "desc": "Not read"
-}
-collection.insert_one(mail_1)
-
-
-# Query and search the database
-mails = get_mails(collection, {})
-for mail in mails:
-    print(f"From {mail['name'] }: {mail['status']} ({mail['desc']})")
-
-# Only search the database for mails sent to def@gmail.com
-print("Sent to def@gmail.com:")
-mails = get_mails(collection, {"sent_to": "def@gmail.com"})
-for mail in mails:
-    print(f"From {mail['name'] }: {mail['status']} ({mail['desc']})")
-"""

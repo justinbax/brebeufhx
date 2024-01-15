@@ -20,3 +20,6 @@ venv/*
 **/Pipfile
 **/__pycache__
 node_modules
+**/token.json
+**/credentials.json
+**/.env

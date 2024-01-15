@@ -1,9 +1,11 @@
 from openai import OpenAI
+import os
 import json
 
 def get_openai_client():
+  # TODO error handling
   return OpenAI(
-    api_key="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"
+    api_key=os.environ.get("OPENAI_API_KEY")
   )
 
 def get_feedback(client, text):

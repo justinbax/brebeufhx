@@ -5,6 +5,9 @@ from openai_api import get_openai_client, get_feedback
 from gmail.gmail import get_google_api_connection, search_messages_from, read_message, send_message
 import re
 import time
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -49,6 +52,10 @@ def refresh_emails():
         recent_message = messages[0]
         message_contents = read_message(googleapi_client, recent_message)
         if message_contents["read"]:
+            continue
+        if len(message_contents["text"]) == 0:
+            continue
+        if len(message_contents["text"]) == 0:
             continue
         gpt_feedback = {"positive": "NR"}
         if len(message_contents["text"]) != 0:
