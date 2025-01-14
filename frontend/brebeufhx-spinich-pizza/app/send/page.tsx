@@ -10,8 +10,8 @@ export default function Send() {
     const [arrOfUserPlaceholders, setArrOfUserPlaceholders]: [Array<UserPlaceholders>, any] = useState([{'': ''}])
     
     const axios = require('axios')
-    async function doPostRequest(payload: any) {
-        let res = await axios.post("http://localhost:3001/send", payload)
+    async function doPostRequest(url: string, payload: any) {
+        let res = await axios.post(url, payload)
         let data = res.data
         console.log(data)
     }
@@ -67,7 +67,12 @@ export default function Send() {
         console.log(arrOfUserPlaceholders)
         console.log(arrOfRecipients)
 
-        doPostRequest({recipients: arrOfRecipients, own_email: "cai.lucia04@gmail.com", type: templateType})
+        doPostRequest("http://localhost:3001/send", {recipients: arrOfRecipients, own_email: "chrisyx511@gmail.com", type: templateType})
+
+        for (let i: number = 0; i < arrOfRecipients.length; i++) {
+            let cur: Recipient = arrOfRecipients[i];
+            doPostRequest("http://localhost:3001/track", {email: cur.email, first_name: cur.first_name, last_name: cur.last_name, sent_to: "chrisyx511@gmail.com"})
+        }
     }
     return (
         <main>

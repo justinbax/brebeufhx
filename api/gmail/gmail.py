@@ -9,7 +9,7 @@ from base64 import urlsafe_b64decode, urlsafe_b64encode
 from email.mime.text import MIMEText
 
 SCOPES = ["https://mail.google.com/"]
-our_email = "cai.lucia04@gmail.com"
+our_email = "lucasoliver3141@gmail.com"
 
 def get_google_api_connection():
   creds = None
@@ -37,6 +37,10 @@ def get_google_api_connection():
     print(f"An error occurred: {error}")
 
   return service
+
+
+def get_email_address(service):
+    return ""
 
 
 def search_messages_from(service, email):
@@ -90,7 +94,7 @@ def read_message(service, message):
     parts = payload.get("parts")
     folder_name = "email"
     has_subject = False
-    
+
     if headers:
         for header in headers:
             name = header.get("name")
@@ -101,34 +105,9 @@ def read_message(service, message):
             #if name.lower() == "to":
                 # we print the To address
                 #print("To:", value)
-            if name.lower() == "subject":
+            #if name.lower() == "subject":
                 # make our boolean True, the email has "subject"
-                has_subject = True
-                # make a directory with the name of the subject
-                #folder_name = clean(value)
-                # we will also handle emails with the same subject name
-                folder_counter = 0
-                """
-                while os.path.isdir(folder_name):
-                    folder_counter += 1
-                    # we have the same folder name, add a number next to it
-                    if folder_name[-1].isdigit() and folder_name[-2] == "_":
-                        folder_name = f"{folder_name[:-2]}_{folder_counter}"
-                    elif folder_name[-2:].isdigit() and folder_name[-3] == "_":
-                        folder_name = f"{folder_name[:-3]}_{folder_counter}"
-                    else:
-                        folder_name = f"{folder_name}_{folder_counter}"
-                os.mkdir(folder_name)
-                print("Subject:", value)
-                """
-            #if name.lower() == "date":
-                # we print the date when the message was sent
-                #print("Date:", value)
-    if not has_subject:
-        # if the email does not have a subject, then make a folder with "email" name
-        # since folders are created based on subjects
-        if not os.path.isdir(folder_name):
-            os.mkdir(folder_name)
+                #has_subject = True
     message_text = parse_parts(service, parts, folder_name, message)
     return {"text": message_text, "read": not ("UNREAD" in labelIds)}
 
